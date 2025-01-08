@@ -17,16 +17,9 @@ const studentSchema = new Schema({
   linkedinUrl: {
     type: String,
   },
-  languages: [
-    {
-      name: {
-        type: String,
-      }, // Nombre del lenguaje
-      proficiency: {
-        type: String,
-      }, // Nivel de competencia
-    },
-  ],
+  languages: { 
+    type: [String],
+  },
   program: {
     type: String,
   },
@@ -36,16 +29,12 @@ const studentSchema = new Schema({
   image: {
     type: String,
   },
-  projects: [
-    {
-      cohort: {
-        type: String,
-      },
-      $oid: {
-        type: String,
-      },
-    },
-  ],
+  projects: {
+    type: [String]
+  },
+  cohort: {
+    type: String
+  }
 });
 
 const Student = mongoose.model("Student", studentSchema);
