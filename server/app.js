@@ -16,9 +16,9 @@ const Student = require("./models/student.model.js")
 
 // Conexión a la base de datos:
 mongoose
-.connect('mongodb://localhost:27017/cohort-tools-api')
+.connect('mongodb://127.0.0.1:27017/cohort-tools-api')
 .then(response => console.log(`Connected to Database: "${response.connections[0].name}"`))
-.catch(error => console.error("Error connecting to MongoDB", error));
+.catch(error => console.log("Error connecting to MongoDB", error));
 
 
 // MIDDLEWARE
@@ -47,20 +47,41 @@ app.get("/docs", (req, res) => {
 app.get("/api/cohorts", async (req, res) => {
   try {
     const cohorts = await Cohort.find();
-    res.json(cohorts);
+    res.status(200).json(cohorts);
   } catch (error) {
-    res.status(500).json({ messange: "Error al devolver la data de Cohorts"});
+    res.status(500).json({ message: "Error al devolver la data de Cohorts"});
   }
 });
+
+app.get("/api/cohorts/:cohortId", async (req, res) => {
+  try {
+    const cohorts = await Cohort.findById(req.params.cohortId);
+    res.status(200).json(cohorts)
+  } catch (error) {
+    res.status(500).json({ message: "Error al devolver la data de Cohorts"});
+  }
+});
+
 
 app.get("/api/students", (req, res) => {
   Student.find()
   .then(students => {
-    res.json(students);
+    res.status(200).json(students);
   })
   .catch(error => {
     res.status(500).json({ message: "Error al devolver students"})
   })
+})
+
+app.get("/api/students/:studentsId", async(req, res) => {
+  try {
+    
+    const student = await Student.findById(req.params.studentsId)
+    res.status(200).json(student)
+
+  } catch (error) {
+    res.status(500).json(`Error en conseguir el alumno especifico, error: ${error}`)
+  }
 })
 
 // START SERVER
