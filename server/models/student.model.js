@@ -29,12 +29,25 @@ const studentSchema = new Schema({
   image: {
     type: String,
   },
-  projects: {
-    type: [String]
-  },
   cohort: {
-    type: String
-  }
+    // metodo de mongoose para especificar ObjectId como tipo de dato, y soportas
+    type: Schema.Types.ObjectId,
+    // referencia al nombre de la variable del modelo Cohort (ver en cohort.model.js, deberia de ser el nombre de la variable que se exporta)
+    ref: "Cohort", 
+
+    required: true
+  },
+  
+  projects: [{
+   /* 
+    PROJECTS TENDRIA QUE SER UNA SUBCOLECCION DE STUDENTS
+    CON LAS RUTAS:
+    /api/students/:studentId/projects
+    /api/students/:studentId/projects/:projectId
+   */
+    someContent: String
+  }],
+
 });
 
 const Student = mongoose.model("Student", studentSchema);

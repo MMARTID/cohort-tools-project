@@ -127,7 +127,7 @@ app.delete("/api/cohorts/:cohortId", async (req, res) => {
 
 app.post("/api/students", async(req, res) => {
   try {
-    const createStudents = await Students.create({
+    const createStudents = await Student.create({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
@@ -143,6 +143,7 @@ app.post("/api/students", async(req, res) => {
 
     res.status(201).json(createStudents)
   } catch (error) {
+    console.log(error) 
     res.status(500).json({message: "Error al devover students"} )
   }
 })
