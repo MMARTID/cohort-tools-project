@@ -148,8 +148,9 @@ app.post("/api/students", async(req, res) => {
   }
 })
 
+
 app.get("/api/students", (req, res) => {
-  Student.find()
+  Student.find().populate("cohort")
   .then(students => {
     res.status(200).json(students);
   })
@@ -160,9 +161,10 @@ app.get("/api/students", (req, res) => {
 
 app.get("/api/students/cohort/:cohortId", async(req, res) => {
 try {
-  const students = await Student.findById(req.params.cohortId)
+  const students = await Student.find( {cohort : req.params.cohortId} ).populate("cohort")
   res.status(200).json(students)
 } catch (error) {
+  console.log(req.params.cohortId)
   res.status(500).json(`Error en conseguir el alumno especifico, error: ${error}`)
 }
 
@@ -171,13 +173,20 @@ try {
 app.get("/api/students/:studentsId", async(req, res) => {
   try {
     
-    const student = await Student.findById(req.params.studentsId)
+    const student = await Student.find({ _id : req.params.studentsId}).populate("cohort")
     res.status(200).json(student)
 
   } catch (error) {
     res.status(500).json(`Error en conseguir el alumno especifico, error: ${error}`)
   }
 })
+
+
+
+
+
+
+
 
 app.put("/api/students/:studentsId", async(req, res) => {
   try {
