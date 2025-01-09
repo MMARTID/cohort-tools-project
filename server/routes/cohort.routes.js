@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(createdCohort);
 
   } catch (error) {
-    res.status(500).json(`Error al acceder a cohorts, error: ${error}`);
+    next(error)
   }
 });
 
@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
     const cohorts = await Cohort.find();
     res.status(200).json(cohorts);
   } catch (error) {
-    res.status(500).json({ message: "Error al devolver la data de Cohorts" });
+    next(error)
   }
 });
 
@@ -43,7 +43,7 @@ router.get("/:cohortId", async (req, res) => {
     const cohorts = await Cohort.findById(req.params.cohortId);
     res.status(200).json(cohorts);
   } catch (error) {
-    res.status(500).json({ message: "Error al devolver la data de Cohorts" });
+    next(error)
   }
 });
 
@@ -66,9 +66,7 @@ router.put("/:cohortId", async (req, res) => {
 
     res.status(200).json("Documento Editado");
   } catch (error) {
-    res
-      .status(500)
-      .json(`Error al hacer update de un Cohort especifico, error: ${error}`);
+    next(error)
   }
 });
 
@@ -78,11 +76,7 @@ router.delete("/:cohortId", async (req, res) => {
     await Cohort.findByIdAndDelete(req.params.cohortId);
     res.status(204).send();
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: `Error a la hora de eliminar el cohort, error: ${error}`,
-      });
+    next(error)
   }
 });
 

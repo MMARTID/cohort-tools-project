@@ -22,8 +22,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(createStudents);
     
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error al devover students" });
+    next(error)
   }
 });
 
@@ -34,7 +33,7 @@ router.get("/", (req, res) => {
       res.status(200).json(students);
     })
     .catch((error) => {
-      res.status(500).json({ message: "Error al devolver students" });
+      next(error)
     });
 });
 
@@ -45,10 +44,7 @@ router.get("/cohort/:cohortId", async (req, res) => {
     }).populate("cohort");
     res.status(200).json(students);
   } catch (error) {
-    console.log(req.params.cohortId);
-    res
-      .status(500)
-      .json(`Error en conseguir el alumno especifico, error: ${error}`);
+    next(error)
   }
 });
 
@@ -59,9 +55,7 @@ router.get("/:studentsId", async (req, res) => {
     );
     res.status(200).json(student);
   } catch (error) {
-    res
-      .status(500)
-      .json(`Error en conseguir el alumno especifico, error: ${error}`);
+    next(error)
   }
 });
 
@@ -83,9 +77,7 @@ router.put("/:studentsId", async (req, res) => {
 
     res.status(200).json("documento editado");
   } catch (error) {
-    res
-      .status(500)
-      .json(`Error al hacer update de un Cohort especifico, error: ${error}`);
+    next(error)
   }
 });
 
@@ -94,11 +86,7 @@ router.delete("/:studentId", async (req, res) => {
     await Student.findByIdAndDelete(req.params.studentId);
     res.status(204).send();
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: `Error a la hora de eliminar el cohort, error: ${error}`,
-      });
+    next(error)
   }
 });
 
