@@ -34,8 +34,6 @@ const studentSchema = new Schema({
     type: Schema.Types.ObjectId,
     // referencia al nombre de la variable del modelo Cohort (ver en cohort.model.js, deberia de ser el nombre de la variable que se exporta)
     ref: "Cohort", 
-
-    required: true
   },
   
   projects: [{
