@@ -11,4 +11,7 @@ router.use("/cohorts", cohortRouter)
 const studentRouter = require("./students.routes.js")
 router.use("/students", studentRouter)
 
+const authRouter = require("./auth.routes.js")
+router.use("/auth", authRouter)
+
 module.exports = router

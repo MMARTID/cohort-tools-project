@@ -15,7 +15,6 @@ app.use('/api', indexRouter )
 
 const errorHandling = require("./error-handling")
 
-
 // START SERVER
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
