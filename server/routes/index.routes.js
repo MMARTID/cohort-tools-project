@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const { verifyToken } = require("../middlewares/auth.middlewares.js") // importamos middleware para verificar Token
+
 
 router.get("/", (req, res ) => {
 res.status(200).json({message: "server runing"});
@@ -16,17 +18,13 @@ const authRouter = require("./auth.routes.js")
 router.use("/auth", authRouter)
 
 
-const { verifyToken } = require("../middlewares/auth.middlewares.js")
 
-// EJEMPLO DE RUTA PRIVADA
-router.get("/private-route-example", verifyToken, (req, res) => {
+// User Routes
+// GET /api/users/:id
+// Retrivies a specific user by id. The route should be protected by the authentication middleware
+router.get("/users/:id", verifyToken, (req, res) => {
 
-    // console.log(req.headers)
-
-    //! EL BACKEND NECESITA SABER QUIEN ES EL USUARIO
-    console.log(req.payload)
-
-    res.send("envio de información privada")
+    res.status(200).json(req.payload)
 
 })
 

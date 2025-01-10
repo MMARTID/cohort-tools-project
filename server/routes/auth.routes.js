@@ -1,17 +1,17 @@
 const router = require("express").Router();
 const User = require("../models/User.model");
-const bcryptjs = require("bcryptjs");
+const bcryptjs = require("bcryptjs"); 
 const jwt = require("jsonwebtoken");
-const { verifyToken } = require("../middlewares/auth.middlewares");
+const { verifyToken } = require("../middlewares/auth.middlewares"); // importamos el middleware VerifyToken, para verificar los Tokens
 
 
 
-// POST /auth/signup => Creates a new user in the database
+/* ***    POST /auth/signup => Creates a new user in the database    *** */
 router.post("/signup", async (req, res, next) => {
-  console.log(req.body);
+
   const { name, email, password } = req.body;
 
-  // 0. que la data exista
+  // COMPROBAMOS QUE LA DATA EXISTE (clausula de guardia)
   if (!name || !email || !password) {
     res.status(400).json({
       errorMessage:
@@ -20,7 +20,8 @@ router.post("/signup", async (req, res, next) => {
     return; // detiene la ejecución de la ruta
   }
 
-  // 1. username minimo 2 caracteres
+
+  // COMPROBAMOS QUE EL "NAME" TIENE MINIMO 2 CARACTERES (clausula de guardia)
   if (name.length < 2) {
     res.status(400).json({
       errorMessage:
@@ -29,14 +30,15 @@ router.post("/signup", async (req, res, next) => {
     return; // detiene la ejecución de la ruta
   }
 
-  // 2. contraseña con nivel de seguridad
+
+  // COMPROBAMOS QUE LA CONTRASEÑA CUMPLE CON EL NIVEL DE SEGURIDAD MINIMO (clausula de guardia)
   const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
   if (regexPassword.test(password) === false) {
     res.status(400).json({ errorMessage: "la contraseña no es valida" });
     return;
   }
 
-  // 3. Correo electronico con formato correcto
+  // COMPROBAMOS QUE EL CORREO ELECTRONICO CUMPLE CON EL FORMATO ADECUADO (clausula de guardia)
   const regexEmail =
     /^(?:(?:[\w`~!#$%^&*\-=+;:{}'|,?\/]+(?:(?:\.(?:"(?:\\?[\w`~!#$%^&*\-=+;:{}'|,?\/\.()<>\[\] @]|\\"|\\\\)*"|[\w`~!#$%^&*\-=+;:{}'|,?\/]+))*\.[\w`~!#$%^&*\-=+;:{}'|,?\/]+)?)|(?:"(?:\\?[\w`~!#$%^&*\-=+;:{}'|,?\/\.()<>\[\] @]|\\"|\\\\)+"))@(?:[a-zA-Z\d\-]+(?:\.[a-zA-Z\d\-]+)*|\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])$/gm;
   if (regexEmail.test(email) === false) {
@@ -46,24 +48,31 @@ router.post("/signup", async (req, res, next) => {
   }
 
   try {
+    // CIFRAMOS LA CONTRASEÑA
     const HashedPassword = await bcryptjs.hash(password, 12);
 
-    // VALOR EMAIL en INPUT VS VALOR EMAIL en DB
+    // ENCONTRAMOS AL USUARIO POR SU EMAIL
     const findUser = await User.findOne({ email: email });
-    // console.log(findUser)
-    // SI EXISTE UN USUARIO CON EL EMAIL DESDE EL QUE QUIEREN REGISTRARSE:
+
+    // COMPROBAMOS SI EXISTE O NO UN USUARIO CON ESE EMAIL (clausula de guardia)
     if (findUser !== null) {
       res.status(400).json({
         errorMessage: "Ya existe un usuario con ese correo electronico",
       });
       return; // detiene la ejecución de la ruta
     }
+
+    // CREAMOS EL USUARIO 
     await User.create({
       name: name,
       email: email,
       password: HashedPassword,
     });
+
+    // RESPUESTA
     res.sendStatus(201);
+
+    //ERROR HANDLING
   } catch (error) {
     next(error);
   }
@@ -71,15 +80,13 @@ router.post("/signup", async (req, res, next) => {
 
 
 
-// POST /auth/login => Checks the sent email and password and, if email and password are correct returns a JWT
-//1.- LLAMADA CUANDO ALGUIEN RELLENA LOS INPUTS DEL LOGIN (REQ DE CLIENT A SERVER)
-//2.- SE DESESTRUCRA EL REQ.BODY PARA ABREVIAR
-//3.- TIENE QUE HABER UN EMAIL Y UNA CONTRASEÑA (NO PUEDES REGISTRARTE SIN PONER EL CONTRSAEÑA / TAMPOCO SIN PONER EL EMAIL)
-//4._
+/* ***    POST /auth/login => Verifica el email y la contraseñas enviados. Si el email y la contraseña son correctos, devuelve un JWT    *** */
 router.post("/login", async (req, res, next) => {
+
+  // DESCONSTRUIMOS DE LA INFORMACIÓN ENVIADA: email Y password
   const { email, password } = req.body;
 
-  // tiene que haber data en email y en password. Si el usuario no rellena alguno de los campos, se activa una clausula de guardia
+  // VERIFICAMOS SI LA DATA email Y password EXISTEN. | (clausula de guardia)
   if (!email || !password) {
     res.status(400).json({
       errorMessage: "correo electronico y contraseña son campos obligatorios",
@@ -89,50 +96,61 @@ router.post("/login", async (req, res, next) => {
 
   try {
 
-    // el usuario debe existir en la DB
+    // ENCONTRAMOS AL USUARIO MEDIANTE LA DATA email
     const findUser = await User.findOne({ email: email });
-    console.log(findUser);
+
+    // VERIFICAMOS SI EL USUARIO CON ESE EMAIL EXISTE EN LA BASE DE DATOS (clausula de guardia)
     if (findUser === null) {
       res.status(400).json({errorMessage: "usuario no encontrado con ese correo electronico",});
     }
 
-    // la contraseña debe ser correcta
+    // COMPARAMOS LA CONTRASEÑA ENVIADA (a la hora de hacer login) CON LA CONTRASEÑA DEL USUARIO ENCONTRADO (findUser) EN LA BASE DE DATOS
     const isPasswordCorrect = await bcryptjs.compare(password, findUser.password)
+
+    // VERIFICAMOS QUE LA CONTRASEÑA ES CORRECTA (clausula de guardia)
     if (isPasswordCorrect === false) {
        res.status(400).json({errorMessage: "contraseña incorrecta"}) 
        return // detiene la ejecución de la ruta
     }
 
-    //YA HEMOS AUTENTICADO AL USUARIO 🎉 | Le vamos a entregar su llave virtual
 
+    //HASTA AQUI YA HEMOS AUTENTICADO AL USUARIO 🎉 | AHORA LE VAMOS A ENTREGAR SU LLAVE VIRTUAL
+
+
+    // ENCONTRAMOS TODA LA INFORMACIÓN ESTATICA Y UNICA QUE IDENTIFICA AL USUARIO MEDIANTE (payload)
     const payload = {
         _id: findUser._id,
         email: findUser.email
     } // el payload es toda información estatica y unica que identifica al usuario
+ 
 
+    // CONFIGURAMOS EL TOKEN
     const tokenConfig = {
-        algorithm: "HS256",
-        expiresIn: "7d"
+        algorithm: "HS256", //tipo de algoritmo utilizado
+        expiresIn: "7d" //tiempo de expiración del token
     }
 
+    // CREAMOS EL TOKEN
     const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, tokenConfig)
 
+    // ENTREGAMOS EL TOKEN
     res.status(202).json({authToken: authToken})
 
 
+    // ERROR HANDLING
   } catch (error) {
     next(error);
   }
 });
 
 
-
-// GET /auth/verify => Verifies that the JWT sent by the client is valid
+/* ***    GET /auth/verify => Verifica que el JWT enviado por el cliente es valido   *** */
 router.get("/verify", verifyToken, (req, res, next) => {
 
-    // Esta ruta solo se usa para verificar el token una vez cuando el usuario está navegando por primera vez por la web.
-    // Se usa para indicar al Front-End que el usuario es valido y quien es ese usuario.
+    // ESTA RUTA SOLO SE UTILIZA PARA VERIFICAR EL TOKEN UNA VEZ CUANDO EL USUARIO ESTÁ NAVEGANDO POR PRIMERA VEZ POR LA WEB.
+    // SE USA PARA INDICAR AL FRONT-END QUE EL USUARIO ES VALIDO (verifyToken) Y QUIEN ES ESE USUARIO (payload)
 
+    // ENTREGAMOS EL PAYLOAD
     res.status(202).json({ payload: req.payload })
 
 })
@@ -141,7 +159,12 @@ router.get("/verify", verifyToken, (req, res, next) => {
 
 module.exports = router;
 
+
+
+
 /* 
+
+PASO A PASO
 
 1. ruta post signup y crear usuario //* DONE
 2. validaciones de ruta signup //* DONE
@@ -156,6 +179,3 @@ module.exports = router;
 
 */
 
-
-//todo User Routes: GET /api/users/:id
-    // retrivies a specific user by id. The route should be protected by the authentication middleware

@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Student = require("../models/student.model.js");
 
+// POST /api/students/
 router.post("/", async (req, res) => {
   try {
     const createStudents = await Student.create({
@@ -26,6 +27,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/students/
 router.get("/", (req, res) => {
   Student.find()
     .populate("cohort")
@@ -37,7 +39,8 @@ router.get("/", (req, res) => {
     });
 });
 
-router.get("/cohort/:cohortId", async (req, res) => {
+// GET /api/students/:cohortId
+router.get("/:cohortId", async (req, res) => {
   try {
     const students = await Student.find({
       cohort: req.params.cohortId,
@@ -48,6 +51,7 @@ router.get("/cohort/:cohortId", async (req, res) => {
   }
 });
 
+// GET /api/students/:studentsId
 router.get("/:studentsId", async (req, res) => {
   try {
     const student = await Student.find({ _id: req.params.studentsId }).populate(
@@ -59,6 +63,7 @@ router.get("/:studentsId", async (req, res) => {
   }
 });
 
+// PUT /api/students/:studentsId
 router.put("/:studentsId", async (req, res) => {
   try {
     await Student.findByIdAndUpdate(req.params.studentId, {
@@ -81,6 +86,7 @@ router.put("/:studentsId", async (req, res) => {
   }
 });
 
+// DELETE /api/students/:studentsId
 router.delete("/:studentId", async (req, res) => {
   try {
     await Student.findByIdAndDelete(req.params.studentId);
