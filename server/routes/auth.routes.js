@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const User = require("../models/User.model");
+const bcryptjs = require("bcryptjs");
 
 // POST /auth/signup => Creates a new user in the database
 router.post("/signup", async (req, res, next) => {
@@ -42,23 +43,67 @@ router.post("/signup", async (req, res, next) => {
   }
 
   try {
-    // verificamos que el email sea unico
+    const HashedPassword = await bcryptjs.hash(password, 12);
+
+    // VALOR EMAIL en INPUT VS VALOR EMAIL en DB
     const findUser = await User.findOne({ email: email });
+    // console.log(findUser)
+    // SI EXISTE UN USUARIO CON EL EMAIL DESDE EL QUE QUIEREN REGISTRARSE:
     if (findUser !== null) {
-      res.status(400).json({ errorMessage: "Este email ya existe" });
-      return;
+      res.status(400).json({
+        errorMessage: "Ya existe un usuario con ese correo electronico",
+      });
+      return; // detiene la ejecución de la ruta
     }
     await User.create({
       name: name,
       email: email,
-      password: password,
+      password: HashedPassword,
     });
     res.sendStatus(201);
   } catch (error) {
     next(error);
   }
 });
+
 // POST /auth/login => Checks the sent email and password and, if email and password are correct returns a JWT
+//1.- LLAMADA CUANDO ALGUIEN RELLENA LOS INPUTS DEL LOGIN (REQ DE CLIENT A SERVER)
+//2.- SE DESESTRUCRA EL REQ.BODY PARA ABREVIAR
+//3.- TIENE QUE HABER UN EMAIL Y UNA CONTRASEÑA (NO PUEDES REGISTRARTE SIN PONER EL CONTRSAEÑA / TAMPOCO SIN PONER EL EMAIL)
+//4._
+router.post("/login", async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // tiene que haber data en email y en password. Si el usuario no rellena alguno de los campos, se activa una clausula de guardia
+  if (!email || !password) {
+    res.status(400).json({
+      errorMessage: "correo electronico y contraseña son campos obligatorios",
+    });
+    return; // detiene la ejecución de la ruta
+  }
+
+  try {
+    // el usuario debe existir en la DB
+    const findUser = await User.findOne({ email: email });
+    console.log(findUser);
+    if (findUser === null) {
+      res.status(400).json({errorMessage: "usuario no encontrado con ese correo electronico",});
+    }
+
+    // la contraseña debe ser correcta
+    const isPasswordCorrect = await bcryptjs.compare(password, findUser.password)
+    if (isPasswordCorrect === false) {
+       res.status(400).json({errorMessage: "contraseña incorrecta"}) 
+       return // detiene la ejecución de la ruta
+    }
+
+
+    res.send("todo ok");
+
+  } catch (error) {
+    next(error);
+  }
+});
 
 // GET /auth/verify => Verifies that the JWT sent by the client is valid
 
@@ -68,8 +113,8 @@ module.exports = router;
 
 1. ruta post signup y crear usuario //* DONE
 2. validaciones de ruta signup //* DONE
-3. cifrado contraseña
-4. ruta de login y probar
+3. cifrado contraseña //* DONE
+4. ruta de login y probar //todo
 5. validaciones de login
 6. creacion y envio del token
 7. ruta privada
