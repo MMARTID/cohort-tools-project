@@ -2,6 +2,7 @@ const router = require("express").Router();
 
 const User = require("../models/User.model");
 const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken")
 
 // POST /auth/signup => Creates a new user in the database
 router.post("/signup", async (req, res, next) => {
@@ -83,6 +84,7 @@ router.post("/login", async (req, res, next) => {
   }
 
   try {
+
     // el usuario debe existir en la DB
     const findUser = await User.findOne({ email: email });
     console.log(findUser);
@@ -97,8 +99,22 @@ router.post("/login", async (req, res, next) => {
        return // detiene la ejecución de la ruta
     }
 
+    //YA HEMOS AUTENTICADO AL USUARIO 🎉 | Le vamos a entregar su llave virtual
 
-    res.send("todo ok");
+    const payload = {
+        _id: findUser._id,
+        email: findUser.email
+    } // el payload es toda información estatica y unica que identifica al usuario
+
+    const tokenConfig = {
+        algorithm: "HS256",
+        expiresIn: "7d"
+    }
+
+    const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, tokenConfig)
+
+    res.status(202).json({authToken: authToken})
+
 
   } catch (error) {
     next(error);
@@ -114,9 +130,9 @@ module.exports = router;
 1. ruta post signup y crear usuario //* DONE
 2. validaciones de ruta signup //* DONE
 3. cifrado contraseña //* DONE
-4. ruta de login y probar //todo
-5. validaciones de login
-6. creacion y envio del token
+4. ruta de login y probar //* DONE
+5. validaciones de login //* DONE
+6. creacion y envio del token //* DONE
 7. ruta privada
 8. middleware validacion del token
 9. ponen el middleware en rutas privadas
