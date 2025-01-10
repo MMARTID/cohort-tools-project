@@ -1,8 +1,10 @@
 const router = require("express").Router();
-
 const User = require("../models/User.model");
 const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../middlewares/auth.middlewares");
+
+
 
 // POST /auth/signup => Creates a new user in the database
 router.post("/signup", async (req, res, next) => {
@@ -67,6 +69,8 @@ router.post("/signup", async (req, res, next) => {
   }
 });
 
+
+
 // POST /auth/login => Checks the sent email and password and, if email and password are correct returns a JWT
 //1.- LLAMADA CUANDO ALGUIEN RELLENA LOS INPUTS DEL LOGIN (REQ DE CLIENT A SERVER)
 //2.- SE DESESTRUCRA EL REQ.BODY PARA ABREVIAR
@@ -121,7 +125,19 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+
+
 // GET /auth/verify => Verifies that the JWT sent by the client is valid
+router.get("/verify", verifyToken, (req, res, next) => {
+
+    // Esta ruta solo se usa para verificar el token una vez cuando el usuario está navegando por primera vez por la web.
+    // Se usa para indicar al Front-End que el usuario es valido y quien es ese usuario.
+
+    res.status(202).json({ payload: req.payload })
+
+})
+
+
 
 module.exports = router;
 
@@ -133,9 +149,13 @@ module.exports = router;
 4. ruta de login y probar //* DONE
 5. validaciones de login //* DONE
 6. creacion y envio del token //* DONE
-7. ruta privada
-8. middleware validacion del token
-9. ponen el middleware en rutas privadas
-10. ruta verify
+7. ruta privada //* DONE
+8. middleware validacion del token //* DONE
+9. ponen el middleware en rutas privadas //* DONE
+10. ruta verify //* DONE
 
 */
+
+
+//todo User Routes: GET /api/users/:id
+    // retrivies a specific user by id. The route should be protected by the authentication middleware
