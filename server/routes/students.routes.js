@@ -39,8 +39,8 @@ router.get("/", (req, res) => {
     });
 });
 
-// GET /api/students/:cohortId
-router.get("/:cohortId", async (req, res) => {
+// GET /api/students/cohort/:cohortId
+router.get("/cohort/:cohortId", async (req, res) => {
   try {
     const students = await Student.find({
       cohort: req.params.cohortId,
@@ -54,7 +54,7 @@ router.get("/:cohortId", async (req, res) => {
 // GET /api/students/:studentsId
 router.get("/:studentsId", async (req, res) => {
   try {
-    const student = await Student.find({ _id: req.params.studentsId }).populate(
+    const student = await Student.findById(req.params.studentsId).populate(
       "cohort"
     );
     res.status(200).json(student);
